@@ -62,19 +62,16 @@ class App extends Component {
     const { searchTerm, list } = this.state;
 
     return (
-      <div className="App">
-        <Search
-          value={searchTerm}
-          onChange={this.onSearchChange}
-        />
-        <Search
-          value={searchTerm.toLocaleLowerCase()}
-          onChange={this.onSearchChange}
-        />
-        <Search
-          value={searchTerm.toUpperCase()}
-          onChange={this.onSearchChange}
-        />
+      <div className="page">
+        <div className="interactions">
+          <h1>Sample Heading 1</h1>
+          <Search
+            value={searchTerm}
+            onChange={this.onSearchChange}
+          >
+            Search
+        </Search>
+        </div>
         <Table
           list={list}
           searchTerm={searchTerm}
@@ -86,43 +83,55 @@ class App extends Component {
   }
 }
 
-class Search extends Component {
-  render() {
-    console.log(this);
-    const { value, onChange } = this.props;
-    return (
-      <form>
-        <input
-          type="text"
-          value={value}
-          onChange={onChange} />
-      </form>
-    );
-  }
+const Search = ({ value, onChange, children }) => {
+  return (
+    <form>
+      {children} <input
+        type="text"
+        value={value}
+        onChange={onChange}
+      />
+    </form>
+  )
 }
 
-class Table extends Component {
+
+const Table = ({ list, searchTerm, isSearched, onDismiss }) =>
+  list.filter(isSearched(searchTerm))
+    .map(item =>
+      <div key={item.getKey()} className="table-row">
+        <span>{item.getName()}</span>
+        <span>
+          <Button
+            onClick={
+              () => onDismiss(item.getKey())
+            }
+          >
+            {"Dismiss " + item.getName()}
+          </Button>
+        </span>
+      </div>)
+
+class Button extends Component {
   render() {
-    console.log(this);
-    const { list, searchTerm, isSearched, onDismiss } = this.props;
+    const {
+      onClick,
+      className = '',
+      children
+    } = this.props;
+
     return (
-      list.filter(isSearched(searchTerm))
-        .map(item =>
-          <div key={item.getKey()}>
-            <span>{item.getName()}</span>
-            <span>
-              <button
-                onClick={
-                  () => onDismiss(item.getKey())
-                } type="button">
-                Button
-                </button>
-            </span>
-          </div>)
+      <button
+        onClick={onClick}
+        className={className}
+        type="button"
+      >
+        {children}
+      </button>
     )
   }
 }
 
-// Page 79 of text
+// Page 94 of text
 
 export default App;
