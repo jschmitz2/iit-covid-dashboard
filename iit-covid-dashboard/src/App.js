@@ -212,24 +212,55 @@ const Data = (homeClickFunction, dataClickFunction) =>
         <br />
         <hr />
         <h3>Student Population</h3>
-        <PopulationDataTable />
+        <PopulationDataTable
+          population="student"/>
         <hr />
         <h3>Faculty Population</h3>
-        <DataTable />
+        <PopulationDataTable
+          population="faculty"/>
         <hr />
         <h3>Institutional Housing Statistics</h3>
-        <DataTable />
+        <LocationDataTable 
+          location="institutional"/>
         <hr />
         <h3>Greek Housing Statistics</h3>
-        <DataTable />
+        <LocationDataTable
+          location="greek"/>
         <hr />
       </Col>
     </Row>
   </div>
 
-const PopulationDataTable = () => {
+const PopulationDataTable = ({ population }) => {
   // Placeholder data.
-
+  const data = [
+    [
+      0,
+      "07/01",
+      "08/23",
+      3,
+      0,
+      5,
+      0
+    ],
+    [
+      1,
+      "08/24",
+      "09/01",
+      0,
+      0,
+      5,
+      0
+    ]
+  ]
+  const jsx_data = [];
+  for (const row of data) {
+    let row_data = []
+    for (const val of row) {
+      row_data.push(<td>{val}</td>)
+    }
+    jsx_data.push(<tr>{row_data}</tr>);
+  }
   return (
     <Table striped bordered hover>
       <thead>
@@ -243,41 +274,89 @@ const PopulationDataTable = () => {
           <th>Total Deaths</th>
         </tr>
       </thead>
+      {jsx_data}
     </Table>
   )
 }
 
 
-const DataTable = () =>
-  <Table striped bordered hover>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Username</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>1</td>
-        <td>Mark</td>
-        <td>Otto</td>
-        <td>@mdo</td>
-      </tr>
-      <tr>
-        <td>2</td>
-        <td>Jacob</td>
-        <td>Thornton</td>
-        <td>@fat</td>
-      </tr>
-      <tr>
-        <td>3</td>
-        <td colSpan="2">Larry the Bird</td>
-        <td>@twitter</td>
-      </tr>
-    </tbody>
-  </Table>
+const LocationDataTable = ({ location }) => {
+  // Placeholder data.
+  let data = [];
+  if(location == "greek") {
+    data = [
+      [
+        0,
+        "07/01",
+        "08/23",
+        "Phi Kappa Sigma",
+        3,
+        0,
+        5,
+        0
+      ],
+      [
+        1,
+        "08/24",
+        "09/01",
+        "Phi Kappa Sigma",
+        0,
+        0,
+        5,
+        0
+      ]
+    ]
+  } else if (location == "institutional") {
+    data = [
+      [
+        0,
+        "07/01",
+        "08/23",
+        "McCormick Student Village",
+        3,
+        0,
+        5,
+        0
+      ],
+      [
+        1,
+        "08/24",
+        "09/01",
+        "McCormick Student Village",
+        0,
+        0,
+        5,
+        0
+      ]
+    ]
+  }
+  
+  const jsx_data = [];
+  for (const row of data) {
+    let row_data = []
+    for (const val of row) {
+      row_data.push(<td>{val}</td>)
+    }
+    jsx_data.push(<tr>{row_data}</tr>);
+  }
+  return (
+    <Table striped bordered hover>
+      <thead>
+        <tr>
+          <th>Week</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Location</th>
+          <th>New Cases</th>
+          <th>New Deaths</th>
+          <th>Total Cases</th>
+          <th>Total Deaths</th>
+        </tr>
+      </thead>
+      {jsx_data}
+    </Table>
+  )
+}
 
 
 const CarouselStatsItem = ({ value, population, type, date_start, date_end, body_text }) =>
