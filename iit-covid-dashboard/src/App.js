@@ -5,7 +5,7 @@ import Nav from 'react-bootstrap/Nav'
 import logo from './logo.svg';
 import './App.css';
 
-const AppNavBar = ({ currentPage, homeClickFunction, dataClickFunction }) =>
+const AppNavBar = ({ currentPage, homeClickFunction, dataClickFunction, contactClickFunction }) =>
   <Navbar bg="light" expand="lg">
     <Navbar.Brand onClick={homeClickFunction}>{"IIT Covid Dashboard - " + currentPage}</Navbar.Brand>
     <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -16,8 +16,8 @@ const AppNavBar = ({ currentPage, homeClickFunction, dataClickFunction }) =>
         <Nav.Link href="https://www.iit.edu/COVID-19">University COVID-19 Page</Nav.Link>
         <NavDropdown title="Extra" id="basic-nav-dropdown">
           <NavDropdown.Item onClick={dataClickFunction}>See the Data</NavDropdown.Item>
-          <NavDropdown.Item href="#action/3.2">Source Code</NavDropdown.Item>
-          <NavDropdown.Item href="#action/3.3">Contact</NavDropdown.Item>
+          <NavDropdown.Item href="https://github.com/jschmitz2/iit-covid-dashboard">Source Code</NavDropdown.Item>
+          <NavDropdown.Item onClick={contactClickFunction}>Contact</NavDropdown.Item>
         </NavDropdown>
       </Nav>
       <Form inline>
@@ -37,6 +37,7 @@ class App extends Component {
 
     this.goHome = this.goHome.bind(this);
     this.goData = this.goData.bind(this);
+    this.goContact = this.goContact.bind(this);
   }
 
   goHome() {
@@ -47,22 +48,28 @@ class App extends Component {
     this.setState({ currentPage: "Data" });
   }
 
-  render() {
-    if (this.state.currentPage == "Home") {
-      return Home(this.goHome, this.goData)
-    } else if (this.state.currentPage == "Data") {
-      return Data(this.goHome, this.goData)
-    }
+  goContact() {
+    this.setState({ currentPage: "Contact" })
   }
 
+  render() {
+    if (this.state.currentPage == "Home") {
+      return Home(this.goHome, this.goData, this.goContact)
+    } else if (this.state.currentPage == "Data") {
+      return <Data homeClickFunction={this.goHome} dataClickFunction={this.goData} contactClickFunction={this.goContact} />
+    } else if (this.state.currentPage == "Contact") {
+      return Contact(this.goHome, this.goData, this.goContact)
+    }
+  }
 }
 
-const Home = (homeClickFunction, dataClickFunction) =>
+const Home = (homeClickFunction, dataClickFunction, contactClickFunction) =>
   <div className="Home">
     <AppNavBar
       currentPage="Home"
       homeClickFunction={homeClickFunction}
       dataClickFunction={dataClickFunction}
+      contactClickFunction={contactClickFunction}
     />
     <Container>
       <h1>The Unofficial IIT COVID-19 Dashboard</h1>
@@ -197,47 +204,25 @@ const Home = (homeClickFunction, dataClickFunction) =>
     </Container>
   </div>
 
-const Data = (homeClickFunction, dataClickFunction) =>
-  <div className="Data">
-    <AppNavBar
-      currentPage="Data"
-      homeClickFunction={homeClickFunction}
-      dataClickFunction={dataClickFunction}
-    />
-    <Row>
-      <Col md={{ span: 8, offset: 2 }}>
-        <h1>Week by Week Data</h1>
-        <br />
-        <h2>Overall Statistics</h2>
-        <br />
-        <hr />
-        <h3>Student Population</h3>
-        <PopulationDataTable
-          population="student"/>
-        <hr />
-        <h3>Faculty Population</h3>
-        <PopulationDataTable
-          population="faculty"/>
-        <hr />
-        <h3>Institutional Housing Statistics</h3>
-        <LocationDataTable 
-          location="institutional"/>
-        <hr />
-        <h3>Greek Housing Statistics</h3>
-        <LocationDataTable
-          location="greek"/>
-        <hr />
-      </Col>
-    </Row>
-  </div>
 
-const PopulationDataTable = ({ population }) => {
-  // Placeholder data.
-  const data = [
+class Data extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      homeClickFunction: props.homeClickFunction,
+      dataClickFunction: props.dataClickFunction,
+      contactClickFunction: props.contactClickFunction,
+      locationFilter: "All",
+      weekFilter: "All"
+    }
+  }
+
+  GreekSampleData = [
     [
       0,
-      "07/01",
-      "08/23",
+      "2020-08-24",
+      "2020-09-01",
+      "Phi Kappa Sigma",
       3,
       0,
       5,
@@ -245,8 +230,123 @@ const PopulationDataTable = ({ population }) => {
     ],
     [
       1,
-      "08/24",
-      "09/01",
+      "2020-08-24",
+      "2020-09-01",
+      "Phi Kappa Sigma",
+      0,
+      0,
+      5,
+      0
+    ]
+  ]
+
+  InstitutionalSampleData = [
+    [
+      0,
+      "2020-08-24",
+      "2020-09-01",
+      "McCormick Student Village",
+      3,
+      0,
+      5,
+      0
+    ],
+    [
+      1,
+      "2020-08-24",
+      "2020-09-01",
+      "McCormick Student Village",
+      0,
+      0,
+      5,
+      0
+    ]
+  ]
+
+
+  render() {
+    return (
+      <div className="Data">
+        <AppNavBar
+          currentPage="Data"
+          homeClickFunction={this.homeClickFunction}
+          dataClickFunction={this.dataClickFunction}
+          contactClickFunction={this.contactClickFunction}
+        />
+        <Row>
+          <Col md={{ span: 8, offset: 2 }}>
+            <h1>Week by Week Data</h1>
+            <br />
+            <h2>Overall Statistics</h2>
+            <br />
+            <hr />
+            <h3>Student Population</h3>
+            <PopulationDataTable
+              population="student" />
+            <hr />
+            <h3>Faculty Population</h3>
+            <PopulationDataTable
+              population="faculty" />
+            <hr />
+            <h3>Institutional Housing Statistics</h3>
+            <LocationDataTable
+              table="institutional"
+              data={this.InstitutionalSampleData} />
+            <hr />
+            <h3>Greek Housing Statistics</h3>
+            <LocationDataTable
+              table="greek"
+              data={this.GreekSampleData} />
+            <hr />
+          </Col>
+        </Row>
+      </div>
+    )
+  }
+}
+
+const Contact = (homeClickFunction, dataClickFunction, contactClickFunction) =>
+  <div className="Contact">
+    <AppNavBar
+      currentPage="Contact"
+      homeClickFunction={homeClickFunction}
+      dataClickFunction={dataClickFunction}
+      contactClickFunction={contactClickFunction}
+    />
+    <Container>
+      <br />
+      <Row>
+        <Col md={{ span: 8, offset: 2 }}>
+          <h1>About This Page</h1>
+          <p>This page was created for the Illinois Tech student community. Currently, the university only offers data in weekly emails to students, staff, and faculty.</p><br />
+          <h1>Sources of Data</h1>
+          <p>Data is obtained from weekly emails sent out by the Illinois Tech administration. The data is manually processed into a spreadsheet, which the webapp reads. Click "See the Data" if you're interested in this. If you have other data or information, please reach out. </p><br />
+          <h1>Project Author</h1>
+          <p>This project was built is maintained by Justin Schmitz. Please direct all inquiries to jschmitz2@hawk.iit.edu.</p><br />
+          <h1>Forking for Other Universities</h1>
+          <p>If you're intersted in forking this software for your own university, and would like some help setting things up, please reach out. Doubtless my school isn't the only one witout a useful dashboard, and this information can do social good. </p><br />
+        </Col>
+      </Row>
+
+    </Container>
+  </div>
+
+const PopulationDataTable = ({ population }) => {
+  // Placeholder data.
+  const data = [
+    [
+      0,
+      "2020-08-24",
+      "2020-09-01",
+      3,
+      0,
+      5,
+      0
+    ],
+    [
+      1,
+      "2020-08-24",
+      "2020-09-01",
       0,
       0,
       5,
@@ -262,102 +362,153 @@ const PopulationDataTable = ({ population }) => {
     jsx_data.push(<tr>{row_data}</tr>);
   }
   return (
-    <Table striped bordered hover>
-      <thead>
-        <tr>
-          <th>Week</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>New Cases</th>
-          <th>New Deaths</th>
-          <th>Total Cases</th>
-          <th>Total Deaths</th>
-        </tr>
-      </thead>
-      {jsx_data}
-    </Table>
+    <div>
+      <Form>
+        <Form.Row>
+          <Col>
+            <Form.Label>Start Date Range</Form.Label>
+            <Form.Control type="date" value="2020-08-01" />
+          </Col>
+          <Col>
+            <Form.Label>End Date Range</Form.Label>
+            <Form.Control type="date" value="2021-01-01" />
+          </Col>
+        </Form.Row>
+      </Form>
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>Week</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>New Cases</th>
+            <th>New Deaths</th>
+            <th>Total Cases</th>
+            <th>Total Deaths</th>
+          </tr>
+        </thead>
+        {jsx_data}
+      </Table>
+    </div>
   )
 }
 
+class LocationDataTable extends Component {
+  constructor(props) {
+    super(props);
 
-const LocationDataTable = ({ location }) => {
-  // Placeholder data.
-  let data = [];
-  if(location == "greek") {
-    data = [
-      [
-        0,
-        "07/01",
-        "08/23",
+    let locations = [];
+
+    if (props.table == "greek") {
+      locations = [
+        "All",
         "Phi Kappa Sigma",
-        3,
-        0,
-        5,
-        0
-      ],
-      [
-        1,
-        "08/24",
-        "09/01",
-        "Phi Kappa Sigma",
-        0,
-        0,
-        5,
-        0
+        "Delta Tau Delta",
+        "Triangle",
+        "Pi Kappa Phi",
+        "Alpha Sigma Alpha",
+        "Kappa Phi Delta"
       ]
-    ]
-  } else if (location == "institutional") {
-    data = [
-      [
-        0,
-        "07/01",
-        "08/23",
+    } else if (props.table == "institutional") {
+      locations = [
+        "All",
         "McCormick Student Village",
-        3,
-        0,
-        5,
-        0
-      ],
-      [
-        1,
-        "08/24",
-        "09/01",
-        "McCormick Student Village",
-        0,
-        0,
-        5,
-        0
+        "State Street Village",
+        "Kacek Hall",
+        "Gunsalus Hall",
+        "Carmen Hall"
       ]
-    ]
-  }
-  
-  const jsx_data = [];
-  for (const row of data) {
-    let row_data = []
-    for (const val of row) {
-      row_data.push(<td>{val}</td>)
     }
-    jsx_data.push(<tr>{row_data}</tr>);
-  }
-  return (
-    <Table striped bordered hover>
-      <thead>
-        <tr>
-          <th>Week</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Location</th>
-          <th>New Cases</th>
-          <th>New Deaths</th>
-          <th>Total Cases</th>
-          <th>Total Deaths</th>
-        </tr>
-      </thead>
-      {jsx_data}
-    </Table>
-  )
-}
 
+    this.state = {
+      table: props.table,
+      data: props.data,
+      locations: locations,
+      start_filter: "2020-08-01",
+      end_filter: "2021-09-01"
+    }
+
+    this.process_locations_to_dropdown = this.process_locations_to_dropdown.bind(this);
+    this.process_data_to_table = this.process_data_to_table.bind(this);
+    this.update_start_filter_state = this.update_start_filter_state.bind(this);
+    this.update_end_filter_state = this.update_end_filter_state.bind(this);
+
+  }
+
+  process_data_to_table() {
+    let data = this.state.data;
+    let jsx_data = [];
+    for (const row of data) {
+      let date = row[1];
+      if (date > this.state.start_filter && date < this.state.end_filter) {
+        let row_data = [];
+        for (const val of row) {
+          row_data.push(<td>{val}</td>)
+        }
+        jsx_data.push(<tr>{row_data}</tr>);
+      }
+    }
+    return jsx_data;
+  }
+
+  update_start_filter_state(event) {
+    this.setState({ start_filter: event.target.value });
+  }
+  update_end_filter_state(event) {
+    this.setState({ ent_filter: event.target.value });
+  }
+
+  process_locations_to_dropdown() {
+    let locations = this.state.locations;
+    const location_dropdown = [];
+    for (const location of locations) {
+      location_dropdown.push(<option value={location}>{location}</option>)
+    };
+    return location_dropdown;
+  }
+  render() {
+    return (
+      <div>
+        <Form>
+          <Form.Row>
+            <Col>
+              <Form.Label>Location</Form.Label>
+              <Form.Control
+                as="select"
+                className="my-1 mr-sm-2"
+                custom
+              >{this.process_locations_to_dropdown()}
+              </Form.Control>
+            </Col>
+            <Col>
+              <Form.Label>Start Date Range</Form.Label>
+              <Form.Control type="date" value={this.start_filter} onChange={this.update_start_filter_state} />
+            </Col>
+            <Col>
+              <Form.Label>End Date Range</Form.Label>
+              <Form.Control type="date" value={this.end_filter} onChange={this.update_end_filter_state} />
+            </Col>
+          </Form.Row>
+        </Form>
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Location</th>
+              <th>New Cases</th>
+              <th>New Deaths</th>
+              <th>Total Cases</th>
+              <th>Total Deaths</th>
+            </tr>
+          </thead>
+          {this.process_data_to_table()}
+        </Table>
+      </div >
+    )
+  }
+}
 
 const CarouselStatsItem = ({ value, population, type, date_start, date_end, body_text }) =>
   <Carousel.Item>
