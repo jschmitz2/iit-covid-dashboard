@@ -14,16 +14,10 @@ const AppNavBar = ({ currentPage, homeClickFunction, dataClickFunction, contactC
         <Nav.Link onClick={homeClickFunction}>Home</Nav.Link>
         <Nav.Link onClick={dataClickFunction}>Complete Data</Nav.Link>
         <Nav.Link href="https://www.iit.edu/COVID-19">University COVID-19 Page</Nav.Link>
-        <NavDropdown title="Extra" id="basic-nav-dropdown">
-          <NavDropdown.Item onClick={dataClickFunction}>See the Data</NavDropdown.Item>
-          <NavDropdown.Item href="https://github.com/jschmitz2/iit-covid-dashboard">Source Code</NavDropdown.Item>
-          <NavDropdown.Item onClick={contactClickFunction}>Contact</NavDropdown.Item>
-        </NavDropdown>
+        <Nav.Link onClick={dataClickFunction}>See the Data</Nav.Link>
+        <Nav.Link href="https://github.com/jschmitz2/iit-covid-dashboard">Source Code</Nav.Link>
+        <Nav.Link onClick={contactClickFunction}>Contact</Nav.Link>
       </Nav>
-      <Form inline>
-        <FormControl type="text" placeholder="Search" className="mr-sm-2" />
-        <Button variant="outline-success">Search</Button>
-      </Form>
     </Navbar.Collapse>
   </Navbar>
 
@@ -216,6 +210,50 @@ class Data extends Component {
       weekFilter: "All"
     }
   }
+  
+  StudentSampleData = [
+    [
+      0,
+      "2020-08-24",
+      "2020-09-01",
+      3,
+      0,
+      5,
+      0
+    ],
+    [
+      1,
+      "2020-09-01",
+      "2020-09-08",
+      0,
+      0,
+      5,
+      0
+    ]
+  ]
+
+  FacultySampleData = [
+    [
+      0,
+      "2020-08-24",
+      "2020-09-01",
+      3,
+      0,
+      5,
+      0
+    ],
+    [
+      1,
+      "2020-09-01",
+      "2020-09-08",
+      0,
+      0,
+      5,
+      0
+    ]
+  ]
+
+
 
   GreekSampleData = [
     [
@@ -230,8 +268,8 @@ class Data extends Component {
     ],
     [
       1,
-      "2020-08-24",
       "2020-09-01",
+      "2020-09-08",
       "Phi Kappa Sigma",
       0,
       0,
@@ -253,8 +291,8 @@ class Data extends Component {
     ],
     [
       1,
-      "2020-08-24",
       "2020-09-01",
+      "2020-09-08",
       "McCormick Student Village",
       0,
       0,
@@ -282,11 +320,15 @@ class Data extends Component {
             <hr />
             <h3>Student Population</h3>
             <PopulationDataTable
-              population="student" />
+              table="student"
+              data={this.StudentSampleData}
+            />
             <hr />
             <h3>Faculty Population</h3>
             <PopulationDataTable
-              population="faculty" />
+              table="faculty"
+              data={this.FacultySampleData}
+            />
             <hr />
             <h3>Institutional Housing Statistics</h3>
             <LocationDataTable
@@ -331,66 +373,77 @@ const Contact = (homeClickFunction, dataClickFunction, contactClickFunction) =>
     </Container>
   </div>
 
-const PopulationDataTable = ({ population }) => {
-  // Placeholder data.
-  const data = [
-    [
-      0,
-      "2020-08-24",
-      "2020-09-01",
-      3,
-      0,
-      5,
-      0
-    ],
-    [
-      1,
-      "2020-08-24",
-      "2020-09-01",
-      0,
-      0,
-      5,
-      0
-    ]
-  ]
-  const jsx_data = [];
-  for (const row of data) {
-    let row_data = []
-    for (const val of row) {
-      row_data.push(<td>{val}</td>)
+class PopulationDataTable extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      table: props.table,
+      data: props.data,
+      start_filter: "2020-08-01",
+      end_filter: "2020-09-01"
     }
-    jsx_data.push(<tr>{row_data}</tr>);
+
+    this.update_start_filter_state = this.update_start_filter_state.bind(this);
+    this.update_end_filter_state = this.update_end_filter_state.bind(this);
+    this.process_data_to_table = this.process_data_to_table.bind(this);
   }
-  return (
-    <div>
-      <Form>
-        <Form.Row>
-          <Col>
-            <Form.Label>Start Date Range</Form.Label>
-            <Form.Control type="date" value="2020-08-01" />
-          </Col>
-          <Col>
-            <Form.Label>End Date Range</Form.Label>
-            <Form.Control type="date" value="2021-01-01" />
-          </Col>
-        </Form.Row>
-      </Form>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Week</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>New Cases</th>
-            <th>New Deaths</th>
-            <th>Total Cases</th>
-            <th>Total Deaths</th>
-          </tr>
-        </thead>
-        {jsx_data}
-      </Table>
-    </div>
-  )
+
+  process_data_to_table() {
+    let data = this.state.data;
+    let jsx_data = [];
+    for (const row of data) {
+      let date = row[1];
+      if (date >= this.state.start_filter && date <= this.state.end_filter) {
+        let row_data = [];
+        for (const val of row) {
+          row_data.push(<td>{val}</td>)
+        }
+        jsx_data.push(<tr>{row_data}</tr>);
+      }
+    }
+    return jsx_data;
+  }
+
+  update_start_filter_state(event) {
+    this.setState({ start_filter: event.target.value });
+  }
+  update_end_filter_state(event) {
+    this.setState({ end_filter: event.target.value });
+  }
+
+  render() {
+    return (
+      <div>
+        <Form>
+          <Form.Row>
+            <Col>
+              <Form.Label>Start Date Range</Form.Label>
+              <Form.Control type="date" value={this.start_filter} onChange={this.update_start_filter_state} />
+            </Col>
+            <Col>
+              <Form.Label>End Date Range</Form.Label>
+              <Form.Control type="date" value={this.end_filter} onChange={this.update_end_filter_state} />
+            </Col>
+          </Form.Row>
+        </Form>
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>New Cases</th>
+              <th>New Deaths</th>
+              <th>Total Cases</th>
+              <th>Total Deaths</th>
+            </tr>
+          </thead>
+          {this.process_data_to_table()}
+        </Table>
+      </div>
+    )
+  }
 }
 
 class LocationDataTable extends Component {
@@ -424,12 +477,14 @@ class LocationDataTable extends Component {
       table: props.table,
       data: props.data,
       locations: locations,
+      location_filter: "All",
       start_filter: "2020-08-01",
       end_filter: "2021-09-01"
     }
 
     this.process_locations_to_dropdown = this.process_locations_to_dropdown.bind(this);
     this.process_data_to_table = this.process_data_to_table.bind(this);
+    this.update_location_filter_state = this.update_location_filter_state.bind(this);
     this.update_start_filter_state = this.update_start_filter_state.bind(this);
     this.update_end_filter_state = this.update_end_filter_state.bind(this);
 
@@ -440,22 +495,30 @@ class LocationDataTable extends Component {
     let jsx_data = [];
     for (const row of data) {
       let date = row[1];
-      if (date > this.state.start_filter && date < this.state.end_filter) {
-        let row_data = [];
-        for (const val of row) {
-          row_data.push(<td>{val}</td>)
+      let location = row[3];
+      if (this.state.location_filter == "All" || location == this.state.location_filter) {
+        // Check if locations are all, and if not, make sure they match 
+        if (date >= this.state.start_filter && date <= this.state.end_filter) {
+          let row_data = [];
+          for (const val of row) {
+            row_data.push(<td>{val}</td>)
+          }
+          jsx_data.push(<tr>{row_data}</tr>);
         }
-        jsx_data.push(<tr>{row_data}</tr>);
       }
     }
     return jsx_data;
+  }
+
+  update_location_filter_state(event) {
+    this.setState({ location_filter: event.target.value });
   }
 
   update_start_filter_state(event) {
     this.setState({ start_filter: event.target.value });
   }
   update_end_filter_state(event) {
-    this.setState({ ent_filter: event.target.value });
+    this.setState({ end_filter: event.target.value });
   }
 
   process_locations_to_dropdown() {
@@ -477,6 +540,7 @@ class LocationDataTable extends Component {
                 as="select"
                 className="my-1 mr-sm-2"
                 custom
+                onChange={this.update_location_filter_state}
               >{this.process_locations_to_dropdown()}
               </Form.Control>
             </Col>
