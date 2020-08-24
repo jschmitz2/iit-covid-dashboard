@@ -27,12 +27,36 @@ class App extends Component {
     super(props);
     this.state = {
       currentPage: "Home",
+      data: null
     };
 
     this.goHome = this.goHome.bind(this);
     this.goData = this.goData.bind(this);
     this.goContact = this.goContact.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
   }
+
+  componentDidMount() {
+    console.log(this);
+    var xhr = new XMLHttpRequest();
+    var status = false;
+    xhr.open("GET", "http://localhost:8000/data", false);
+    xhr.onload = function (e) {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          this.setState({ data: JSON.parse(xhr.responseText) });
+          status = true;
+        } else {
+          console.error(xhr.statusText);
+        }
+      }
+    }.bind(this);
+    xhr.onerror = function (e) {
+      console.error(xhr.statusText);
+    };
+    xhr.send(null);
+  }
+
 
   goHome() {
     this.setState({ currentPage: "Home" });
@@ -48,7 +72,7 @@ class App extends Component {
 
   render() {
     if (this.state.currentPage == "Home") {
-      return Home(this.goHome, this.goData, this.goContact)
+      return <Home homeClickFunction={this.goHome} dataClickFunction={this.goData} contactClickFunction={this.goContact} data={this.state.data}/>
     } else if (this.state.currentPage == "Data") {
       return <Data homeClickFunction={this.goHome} dataClickFunction={this.goData} contactClickFunction={this.goContact} />
     } else if (this.state.currentPage == "Contact") {
@@ -57,151 +81,174 @@ class App extends Component {
   }
 }
 
-const Home = (homeClickFunction, dataClickFunction, contactClickFunction) =>
-  <div className="Home">
-    <AppNavBar
-      currentPage="Home"
-      homeClickFunction={homeClickFunction}
-      dataClickFunction={dataClickFunction}
-      contactClickFunction={contactClickFunction}
-    />
-    <Container>
-      <h1>The Unofficial IIT COVID-19 Dashboard</h1>
-      <h3>Presented by the smoldering corpse of AEPKS</h3>
-      <br />
-      <Row>
-        <Col md={{ span: 6, offset: 3 }}>
-          <StatsCarousel
-            currentSlide="Start"
-          />
-        </Col>
-      </Row>
-      <hr />
-      <br />
-      <Row>
-        <Col md={{ span: 8, offset: 2 }}>
-          <h2>Cases by Location</h2>
-          <br />
-        </Col>
-      </Row>
-      <Row>
-        <Col md={{ span: 4, offset: 2 }}>
-          <h5>Institutional Housing</h5>
-        </Col>
-        <Col md={{ span: 4 }}>
-          <h5>Greek Housing</h5>
-        </Col>
-      </Row>
-      <Row>
-        <Col md={{ span: 2, offset: 2 }}>
-          {CaseNumberBox({
-            cases: 100,
-            location: "McCormick Student Village",
-            start_date: "8/24",
-            end_date: "9/01"
-          })}
-          <br />
-        </Col>
-        <Col md={{ span: 2, offset: 0 }}>
-          {CaseNumberBox({
-            cases: 100,
-            location: "State Street Village",
-            start_date: "8/24",
-            end_date: "9/01"
-          })}
-        </Col>
-        <Col md={{ span: 2, offset: 0 }}>
-          {CaseNumberBox({
-            cases: 27,
-            location: "Phi Kappa Sigma",
-            start_date: "8/24",
-            end_date: "9/01"
-          })}
-        </Col>
-        <Col md={{ span: 2, offset: 0 }}>
-          {CaseNumberBox({
-            cases: 27,
-            location: "Delta Tau Delta",
-            start_date: "8/24",
-            end_date: "9/01"
-          })}
-        </Col>
-      </Row>
+class Home extends Component {
+  constructor(props) {
+    super(props);
+    console.log(props);
+    this.state = {
+      homeClickFunction: props.homeClickFunction,
+      dataClickFunction: props.dataClickFunction,
+      contactClickFunction: props.contactClickFunction,
+      data: props.data,
+      locationFilter: "All",
+      weekFilter: "All"
+    }
+    this.getLocationCaseTotal = this.getLocationCaseTotal.bind(this);
+  }
+  
+  getLocationCaseTotal(location, type) {
+    // Location: house. Type: "ins" or "greek".
+    console.log(this.state.data);
+  }
 
-      <Row>
-        <Col md={{ span: 2, offset: 2 }}>
-          {CaseNumberBox({
-            cases: 27,
-            location: "Kacek Hall",
-            start_date: "8/24",
-            end_date: "9/01"
-          })}
-        </Col>
-        <Col md={{ span: 2, offset: 0 }}>
-          {CaseNumberBox({
-            cases: 27,
-            location: "Gunsalus Hall",
-            start_date: "8/24",
-            end_date: "9/01"
-          })}
-        </Col>
-        <Col md={{ span: 2, offset: 0 }}>
-          {CaseNumberBox({
-            cases: 27,
-            location: "Alpha Sigma Alpha",
-            start_date: "8/24",
-            end_date: "9/01"
-          })}
-          <br />
-        </Col>
-        <Col md={{ span: 2, offset: 0 }}>
-          {CaseNumberBox({
-            cases: 27,
-            location: "Kappa Phi Delta",
-            start_date: "8/24",
-            end_date: "9/01"
-          })}
-          <br />
-        </Col>
-      </Row>
+  render() {
+    return <div className="Home">
+      <AppNavBar
+        currentPage="Home"
+        homeClickFunction={this.state.homeClickFunction}
+        dataClickFunction={this.state.dataClickFunction}
+        contactClickFunction={this.state.contactClickFunction}
+      />
+      <Container>
+        <h1>The Unofficial IIT COVID-19 Dashboard</h1>
+        <h3>Presented by the smoldering corpse of AEPKS</h3>
+        <br />
+        <Row>
+          <Col md={{ span: 6, offset: 3 }}>
+            <StatsCarousel
+              currentSlide="Start"
+            />
+          </Col>
+        </Row>
+        <hr />
+        <br />
+        <Row>
+          <Col md={{ span: 8, offset: 2 }}>
+            <h2>Cases by Location</h2>
+            <br />
+          </Col>
+        </Row>
+        <Row>
+          <Col md={{ span: 4, offset: 2 }}>
+            <h5>Institutional Housing</h5>
+          </Col>
+          <Col md={{ span: 4 }}>
+            <h5>Greek Housing</h5>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={{ span: 2, offset: 2 }}>
+            {CaseNumberBox({
+              cases: 100,
+              location: "McCormick Student Village",
+              start_date: "8/24",
+              end_date: "9/01"
+            })}
+            <br />
+          </Col>
+          <Col md={{ span: 2, offset: 0 }}>
+            {CaseNumberBox({
+              cases: 100,
+              location: "State Street Village",
+              start_date: "8/24",
+              end_date: "9/01"
+            })}
+          </Col>
+          <Col md={{ span: 2, offset: 0 }}>
+            {CaseNumberBox({
+              cases: 27,
+              location: "Phi Kappa Sigma",
+              start_date: "8/24",
+              end_date: "9/01"
+            })}
+          </Col>
+          <Col md={{ span: 2, offset: 0 }}>
+            {CaseNumberBox({
+              cases: 27,
+              location: "Delta Tau Delta",
+              start_date: "8/24",
+              end_date: "9/01"
+            })}
+          </Col>
+        </Row>
 
-      <Row>
-        <Col md={{ span: 2, offset: 2 }}>
-          {CaseNumberBox({
-            cases: 27,
-            location: "Carmen Hall",
-            start_date: "8/24",
-            end_date: "9/01"
-          })}
-          <br />
-        </Col>
-        <Col md={{ span: 2, offset: 0 }}>
-        </Col>
-        <Col md={{ span: 2, offset: 0 }}>
-          {CaseNumberBox({
-            cases: 27,
-            location: "Pi Kappa Phi",
-            start_date: "8/24",
-            end_date: "9/01"
-          })}
-          <br />
-        </Col>
-        <Col md={{ span: 2, offset: 0 }}>
-          {CaseNumberBox({
-            cases: 27,
-            location: "Triangle",
-            start_date: "8/24",
-            end_date: "9/01"
-          })}
-        </Col>
-      </Row>
-    </Container>
-  </div>
+        <Row>
+          <Col md={{ span: 2, offset: 2 }}>
+            {CaseNumberBox({
+              cases: 27,
+              location: "Kacek Hall",
+              start_date: "8/24",
+              end_date: "9/01"
+            })}
+          </Col>
+          <Col md={{ span: 2, offset: 0 }}>
+            {CaseNumberBox({
+              cases: 27,
+              location: "Gunsalus Hall",
+              start_date: "8/24",
+              end_date: "9/01"
+            })}
+          </Col>
+          <Col md={{ span: 2, offset: 0 }}>
+            {CaseNumberBox({
+              cases: 27,
+              location: "Alpha Sigma Alpha",
+              start_date: "8/24",
+              end_date: "9/01"
+            })}
+            <br />
+          </Col>
+          <Col md={{ span: 2, offset: 0 }}>
+            {CaseNumberBox({
+              cases: 27,
+              location: "Kappa Phi Delta",
+              start_date: "8/24",
+              end_date: "9/01"
+            })}
+            <br />
+          </Col>
+        </Row>
+
+        <Row>
+          <Col md={{ span: 2, offset: 2 }}>
+            {CaseNumberBox({
+              cases: 27,
+              location: "Carmen Hall",
+              start_date: "8/24",
+              end_date: "9/01"
+            })}
+            <br />
+          </Col>
+          <Col md={{ span: 2, offset: 0 }}>
+          </Col>
+          <Col md={{ span: 2, offset: 0 }}>
+            {CaseNumberBox({
+              cases: 27,
+              location: "Pi Kappa Phi",
+              start_date: "8/24",
+              end_date: "9/01"
+            })}
+            <br />
+          </Col>
+          <Col md={{ span: 2, offset: 0 }}>
+            {CaseNumberBox({
+              cases: 27,
+              location: "Triangle",
+              start_date: "8/24",
+              end_date: "9/01"
+            })}
+          </Col>
+        </Row>
+      </Container>
+    </div>
+  }
+}
 
 
 class Data extends Component {
   constructor(props) {
     super(props);
+    console.log(props);
     this.state = {
       homeClickFunction: props.homeClickFunction,
       dataClickFunction: props.dataClickFunction,
@@ -307,9 +354,9 @@ class Data extends Component {
       <div className="Data">
         <AppNavBar
           currentPage="Data"
-          homeClickFunction={this.homeClickFunction}
-          dataClickFunction={this.dataClickFunction}
-          contactClickFunction={this.contactClickFunction}
+          homeClickFunction={this.state.homeClickFunction}
+          dataClickFunction={this.state.dataClickFunction}
+          contactClickFunction={this.state.contactClickFunction}
         />
         <Row>
           <Col md={{ span: 8, offset: 2 }}>
