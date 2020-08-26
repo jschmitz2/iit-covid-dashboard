@@ -709,14 +709,14 @@ class LocationDataTable extends Component {
 
 const CarouselStatsItem = ({ cases, population, type, start_date, end_date, body_text, key }) => {
   let width = window.innerWidth;
-  let heading_text = "New " + population.toLowerCase() + " " + type + " from " + start_date + " to " + end_date;
+  let heading_text = "New " + population.toLowerCase() + " " + type + "\nFrom " + start_date + " to " + end_date;
 
   return (
     <Carousel.Item key={key}>
       <img
         className="d-block w-100"
         src={"http://www.iit.wtf:8000/number_image/" + cases + "/" + heading_text}
-        alt={"New " + population + " " + type + " from " + start_date + " to " + end_date}
+        alt={heading_text}
       />
       {/* <Carousel.Caption>
         <h1 style={{position: "relative", top: 0}}>{cases}</h1>
