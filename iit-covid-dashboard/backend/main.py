@@ -19,9 +19,9 @@ app.add_middleware(
 
 sheet_session = sheet_data.Session()
 
-@app.get("/number_image/{value}")
-async def getImage(value: int):
-    return FileResponse(image_gen.gen_number_image(value))
+@app.get("/number_image/{value}/{width}")
+async def getImage(value: int, width: str):
+    return FileResponse(image_gen.gen_number_image(value, width))
 
 @app.get("/data")
 async def getData():
