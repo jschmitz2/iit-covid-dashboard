@@ -709,7 +709,7 @@ const CarouselStatsItem = ({ cases, population, type, start_date, end_date, body
   <Carousel.Item key={key}>
     <img
       className="d-block w-100"
-      src={"http://localhost:8000/number_image/" + cases}
+      src={"http://www.iit.wtf:8000/number_image/" + cases}
       alt={"New" + population + " " + type + " from " + start_date + " to " + end_date}
     />
     <Carousel.Caption>
