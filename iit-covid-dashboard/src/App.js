@@ -45,7 +45,7 @@ class App extends Component {
   componentDidMount() {
     var xhr = new XMLHttpRequest();
     var status = false;
-    xhr.open("GET", "http://localhost:8000/data", false);
+    xhr.open("GET", "http://www.iit.wtf:8000/data", false);
     xhr.onload = function (e) {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
