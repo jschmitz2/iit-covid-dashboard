@@ -45,7 +45,8 @@ class App extends Component {
   componentDidMount() {
     var xhr = new XMLHttpRequest();
     var status = false;
-    xhr.open("GET", "http://www.iit.wtf:8000/data", false);
+    // xhr.open("GET", "http://www.iit.wtf:8000/data", false);
+    xhr.open("GET", "http://localhost:8000/data", false);
     xhr.onload = function (e) {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
@@ -214,7 +215,7 @@ class Home extends Component {
       if ((row.week === row.max_week) && (row.pop === population)) {
         if (query === "total") {
           for (let first_row of list) {
-            if(first_row.start_date < start_date) {
+            if (first_row.start_date < start_date) {
               start_date = first_row.start_date;
             }
           }
@@ -260,6 +261,7 @@ class Home extends Component {
       verticalAlign: "center"
     };
 
+
     let slides = [
       this.getPopulationCaseTotal("STUDENT", "total", "cases", 0),
       this.getPopulationCaseTotal("STUDENT", "new", "cases", 1),
@@ -282,7 +284,7 @@ class Home extends Component {
           <Col md={{ span: 6, offset: 3 }}>
             <StatsCarousel
               currentSlide="Start"
-              slides = {slides}
+              slides={slides}
             />
           </Col>
         </Row>
@@ -477,9 +479,9 @@ const Contact = (homeClickFunction, dataClickFunction, contactClickFunction) =>
           <h1>Sources of Data</h1>
           <p>Data is obtained from weekly emails sent out by the Illinois Tech administration. The data is manually processed into a spreadsheet, which the webapp reads. Click "See the Data" if you're interested in this. If you have other data or information, please reach out. </p><br />
           <h1>Project Author</h1>
-          <p>This project was built is maintained by Justin Schmitz. Please direct all inquiries to jschmitz2@hawk.iit.edu.</p><br />
+          <p>This project is maintained by Justin Schmitz. Please direct all inquiries to justin@iit.wtf.</p><br />
           <h1>Forking for Other Universities</h1>
-          <p>If you're intersted in forking this software for your own university, and would like some help setting things up, please reach out. Doubtless my school isn't the only one witout a useful dashboard, and this information can do social good. </p><br />
+          <p>If you're intersted in forking this software for your own university, and would like some help setting things up, please reach out. Doubtless my school isn't the only one without a useful dashboard, and this information can do social good. </p><br />
         </Col>
       </Row>
 
@@ -705,18 +707,25 @@ class LocationDataTable extends Component {
   }
 }
 
-const CarouselStatsItem = ({ cases, population, type, start_date, end_date, body_text, key}) =>
-  <Carousel.Item key={key}>
-    <img
-      className="d-block w-100"
-      src={"http://www.iit.wtf:8000/number_image/" + cases}
-      alt={"New" + population + " " + type + " from " + start_date + " to " + end_date}
-    />
-    <Carousel.Caption>
-      <h3>New {population} {type} from {start_date} to {end_date}</h3>
-      <p>{body_text}</p>
-    </Carousel.Caption>
-  </Carousel.Item>
+const CarouselStatsItem = ({ cases, population, type, start_date, end_date, body_text, key }) => {
+  let width = window.innerWidth;
+  let heading_text = "New " + population.toLowerCase() + " " + type + " from " + start_date + " to " + end_date;
+
+  return (
+    <Carousel.Item key={key}>
+      <img
+        className="d-block w-100"
+        src={"http://localhost:8000/number_image/" + cases + "/" + heading_text}
+        alt={"New " + population + " " + type + " from " + start_date + " to " + end_date}
+      />
+      {/* <Carousel.Caption>
+        <h1 style={{position: "relative", top: 0}}>{cases}</h1>
+        <p>{heading_text}</p>
+      </Carousel.Caption> */}
+    </Carousel.Item>
+  )
+}
+
 
 class StatsCarousel extends Component {
   constructor(props) {
@@ -727,7 +736,7 @@ class StatsCarousel extends Component {
 
     this.render_slides = this.render_slides.bind(this);
   }
-  
+
   render_slides() {
     let slides = [];
     for (let slide_key in this.state.slides) {
