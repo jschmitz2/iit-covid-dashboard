@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Navbar from 'react-bootstrap/Navbar'
-import { Form, Table, Container, Row, Col, Carousel, Card, Button, NavDropdown, FormControl, Spinner } from "react-bootstrap";
+import { Form, Table, Container, Row, Col, Carousel, Card, Spinner } from "react-bootstrap";
 import Nav from 'react-bootstrap/Nav'
 import logo from './logo.svg';
 import './App.css';
@@ -43,7 +43,6 @@ class App extends Component {
   }
 
   componentDidMount() {
-    console.log(this);
     var xhr = new XMLHttpRequest();
     var status = false;
     xhr.open("GET", "http://localhost:8000/data", false);
@@ -77,11 +76,11 @@ class App extends Component {
   }
 
   render() {
-    if (this.state.currentPage == "Home" && this.state.data_loaded) {
+    if (this.state.currentPage === "Home" && this.state.data_loaded) {
       return <Home homeClickFunction={this.goHome} dataClickFunction={this.goData} contactClickFunction={this.goContact} data={this.state.data} />
-    } else if (this.state.currentPage == "Data" && this.state.data_loaded) {
+    } else if (this.state.currentPage === "Data" && this.state.data_loaded) {
       return <Data homeClickFunction={this.goHome} dataClickFunction={this.goData} contactClickFunction={this.goContact} data={this.state.data} />
-    } else if (this.state.currentPage == "Contact") {
+    } else if (this.state.currentPage === "Contact") {
       return Contact(this.goHome, this.goData, this.goContact);
     } else {
       return LoadingScreen();
@@ -99,7 +98,6 @@ const LoadingScreen = () =>
 class Home extends Component {
   constructor(props) {
     super(props);
-    console.log(props);
     this.state = {
       homeClickFunction: props.homeClickFunction,
       dataClickFunction: props.dataClickFunction,
@@ -122,16 +120,16 @@ class Home extends Component {
   getLocationCaseTotal(location, list_kword, query, type) {
     // Location: institution name. list_kword: "ins" or "greek". query: "total" or "new". type: "cases" or "deaths".
     let list = null;
-    if (list_kword == "ins") {
+    if (list_kword === "ins") {
       list = this.state.ins_housing;
     } else {
       list = this.state.greek_housing;
     }
 
     for (let row of list) {
-      if ((row.week == row.max_week) && row.location == location) {
-        if (query == "total") {
-          if (type == "cases") {
+      if ((row.week === row.max_week) && row.location === location) {
+        if (query === "total") {
+          if (type === "cases") {
             return {
               "cases": row.total_cases,
               "location": row.location,
@@ -151,7 +149,7 @@ class Home extends Component {
             }
           }
         } else {
-          if (type == "cases") {
+          if (type === "cases") {
             return {
               "cases": row.new_cases,
               "location": row.location,
@@ -184,10 +182,6 @@ class Home extends Component {
     }
   }
 
-  toggleNewTotal(event) {
-    console.log(event);
-  }
-
   updateNewTotalState(event) {
     this.setState({ newTotal: event.target.value });
   }
@@ -196,48 +190,50 @@ class Home extends Component {
     this.setState({ casesDeaths: event.target.value });
   }
 
-  getPopulationCaseTotal(population, query, type) {
-    // population: "student" or "faculty".  query: "total" or "new". type: "cases" or "deaths".
+  getPopulationCaseTotal(population, query, type, key) {
+    // population: "STUDENT" or "FACULTY".  query: "total" or "new". type: "cases" or "deaths".
     let list = null;
-    if (population == "student") {
+    if (population === "STUDENT") {
       list = this.state.student_population;
     } else {
       list = this.state.faculty_population;
     }
-    
+
+    // let quotes = [
+    //   "\"We must reopen in the fall with an on-campus experience.\" ~Alan Cramb",
+    //   "\"They are all in close proximity to each other (definitely not 6 feet apart) and not wearing masks.\""
+    //   "\"When I walked into my supposedly clean dorm room, there was hair everywhere. There was dried pasta on the floor. There was dirt everywhere. There was rust and mold in my shower.\""
+    // ] 
+
     let cases;
-    let start_date;
+    let start_date = "2020-12-31";
     let end_date;
     let body_text = "Placeholder body text";
 
     for (let row of list) {
-      if ((row.week == row.max_week) && (row.population == population)) {
-        if (query == "total") {
-          for(let first_row of list) {
-            if(first_row.week == 0) {
+      if ((row.week === row.max_week) && (row.pop === population)) {
+        if (query === "total") {
+          for (let first_row of list) {
+            if(first_row.start_date < start_date) {
               start_date = first_row.start_date;
             }
           }
           end_date = row.end_date;
-          if (type == "cases") {
+          if (type === "cases") {
             cases = row.total_cases;
-            console.log(cases);
             break;
           } else {
             cases = row.total_deaths;
-            console.log(cases);
             break;
           }
         } else { // New
           start_date = row.start_date;
           end_date = row.end_date;
-          if (type == "cases") {
+          if (type === "cases") {
             cases = row.new_cases;
-            console.log(cases);
             break;
           } else {
             cases = row.new_deaths;
-            console.log(cases);
             break;
           }
         }
@@ -251,10 +247,9 @@ class Home extends Component {
       "end_date": end_date,
       "query": query,
       "type": type,
-      "body_text": body_text
+      "body_text": body_text,
+      "key": key
     }
-    console.log("Returning:")
-    console.log(return_val);
     return return_val;
   }
 
@@ -266,13 +261,11 @@ class Home extends Component {
     };
 
     let slides = [
-      this.getPopulationCaseTotal("student", "total", "cases"),
-      this.getPopulationCaseTotal("student", "new", "cases"),
-      this.getPopulationCaseTotal("faculty", "total", "cases"),
-      this.getPopulationCaseTotal("faculty", "total", "cases")
+      this.getPopulationCaseTotal("STUDENT", "total", "cases", 0),
+      this.getPopulationCaseTotal("STUDENT", "new", "cases", 1),
+      this.getPopulationCaseTotal("FACULTY", "total", "cases", 2),
+      this.getPopulationCaseTotal("FACULTY", "new", "cases", 3)
     ];
-    
-    console.log(slides);
 
     return <div className="Home">
       <AppNavBar
@@ -283,7 +276,7 @@ class Home extends Component {
       />
       <Container>
         <h1>The Unofficial IIT COVID-19 Dashboard</h1>
-        <h3>"Because We Don't Care" ~Alan Cramb</h3>
+        <h3>"Without students on our campus and in our housing, we are not financially viable." ~Alan Cramb</h3>
         <br />
         <Row>
           <Col md={{ span: 6, offset: 3 }}>
@@ -456,7 +449,6 @@ class Data extends Component {
               data={this.state.ins_housing} />
             <hr />
             <h3>Greek Housing Statistics</h3>
-            {console.log(this.state.greek_housing)}
             <LocationDataTable
               table="greek"
               data={this.state.greek_housing} />
@@ -582,7 +574,7 @@ class LocationDataTable extends Component {
 
     let locations = [];
 
-    if (props.table == "greek") {
+    if (props.table === "greek") {
       locations = [
         "All",
         "Phi Kappa Sigma",
@@ -592,7 +584,7 @@ class LocationDataTable extends Component {
         "Alpha Sigma Alpha",
         "Kappa Phi Delta"
       ]
-    } else if (props.table == "institutional") {
+    } else if (props.table === "institutional") {
       locations = [
         "All",
         "McCormick Student Village",
@@ -636,7 +628,7 @@ class LocationDataTable extends Component {
     for (const row of data) {
       let date = row.start_date;
       let location = row.location;
-      if (this.state.location_filter == "All" || location == this.state.location_filter) {
+      if (this.state.location_filter === "All" || location === this.state.location_filter) {
         if (date >= this.state.start_filter && date <= this.state.end_filter) {
           let row_data = [];
           for (let header of data_headers) {
@@ -713,8 +705,8 @@ class LocationDataTable extends Component {
   }
 }
 
-const CarouselStatsItem = ({ cases, population, type, start_date, end_date, body_text }) =>
-  <Carousel.Item>
+const CarouselStatsItem = ({ cases, population, type, start_date, end_date, body_text, key}) =>
+  <Carousel.Item key={key}>
     <img
       className="d-block w-100"
       src={"http://localhost:8000/number_image/" + cases}
@@ -732,21 +724,20 @@ class StatsCarousel extends Component {
     this.state = {
       slides: props.slides
     }
+
     this.render_slides = this.render_slides.bind(this);
   }
   
   render_slides() {
     let slides = [];
-    console.log(this);
-    for (let slide in this.state.slides) {
-      console.log(slide);
+    for (let slide_key in this.state.slides) {
+      let slide = this.state.slides[slide_key];
       slides.push(CarouselStatsItem(slide));
     }
     return slides;
   }
 
   render() {
-    console.log(this.render_slides());
     return (
       <Carousel>
         {this.render_slides()}
@@ -756,7 +747,7 @@ class StatsCarousel extends Component {
 }
 
 const CaseNumberBox = ({ cases, location, start_date, end_date, query, type }) => {
-  if (cases == 0) {
+  if (cases === 0) {
     return (
       <Card style={{ width: '10rem' }}>
         <Card.Body>

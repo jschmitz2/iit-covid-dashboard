@@ -7,7 +7,6 @@ import os
 import image_gen
 import sheet_data
 
-some_file_path = "large-video-file.mp4"
 app = FastAPI()
 
 app.add_middleware(
@@ -76,6 +75,8 @@ async def getData():
             new_cases = 0
             new_deaths = 0
 
+            case = None
+
             for case in filter(lambda case: (case["week"] == week_idx and case["pop"] == pop_name), cases):
                 new_cases += case["cases_num"]
                 new_deaths += case["deaths_num"]
@@ -83,12 +84,14 @@ async def getData():
             total_cases += new_cases
             total_deaths += new_deaths
 
-            week_obj = case.copy()
+            if case:
+                week_obj = case.copy()
 
-            week_obj["new_cases"], week_obj["new_deaths"] = new_cases, new_deaths
-            week_obj["total_cases"], week_obj["total_deaths"] = total_cases, total_deaths
+                week_obj["new_cases"], week_obj["new_deaths"] = new_cases, new_deaths
+                week_obj["total_cases"], week_obj["total_deaths"] = total_cases, total_deaths
+                week_obj["max_week"] = max_week
 
-            pop_output.append(week_obj)
+                pop_output.append(week_obj)
     
 
     locations = set()
