@@ -45,8 +45,8 @@ class App extends Component {
   componentDidMount() {
     var xhr = new XMLHttpRequest();
     var status = false;
-    // xhr.open("GET", "http://www.iit.wtf:8000/data", false);
-    xhr.open("GET", "http://localhost:8000/data", false);
+    xhr.open("GET", "http://www.iit.wtf:8000/data", false);
+    // xhr.open("GET", "http://localhost:8000/data", false);
     xhr.onload = function (e) {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
@@ -715,7 +715,7 @@ const CarouselStatsItem = ({ cases, population, type, start_date, end_date, body
     <Carousel.Item key={key}>
       <img
         className="d-block w-100"
-        src={"http://localhost:8000/number_image/" + cases + "/" + heading_text}
+        src={"http://www.iit.wtf:8000/number_image/" + cases + "/" + heading_text}
         alt={"New " + population + " " + type + " from " + start_date + " to " + end_date}
       />
       {/* <Carousel.Caption>
