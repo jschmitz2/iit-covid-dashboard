@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Navbar from 'react-bootstrap/Navbar'
-import { Form, Table, Container, Row, Col, Carousel, Card, Button, NavDropdown, FormControl } from "react-bootstrap";
+import { Form, Table, Container, Row, Col, Carousel, Card, Button, NavDropdown, FormControl, Spinner } from "react-bootstrap";
 import Nav from 'react-bootstrap/Nav'
 import logo from './logo.svg';
 import './App.css';
@@ -27,7 +27,13 @@ class App extends Component {
     super(props);
     this.state = {
       currentPage: "Home",
-      data: null
+      data: {
+        student_population: [],
+        faculty_population: [],
+        ins_housing: [],
+        greek_housing: []
+      },
+      data_loaded: false
     };
 
     this.goHome = this.goHome.bind(this);
@@ -44,7 +50,7 @@ class App extends Component {
     xhr.onload = function (e) {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
-          this.setState({ data: JSON.parse(xhr.responseText) });
+          this.setState({ data: JSON.parse(xhr.responseText), data_loaded: true });
           status = true;
         } else {
           console.error(xhr.statusText);
@@ -71,15 +77,24 @@ class App extends Component {
   }
 
   render() {
-    if (this.state.currentPage == "Home") {
-      return <Home homeClickFunction={this.goHome} dataClickFunction={this.goData} contactClickFunction={this.goContact} data={this.state.data}/>
-    } else if (this.state.currentPage == "Data") {
-      return <Data homeClickFunction={this.goHome} dataClickFunction={this.goData} contactClickFunction={this.goContact} />
+    if (this.state.currentPage == "Home" && this.state.data_loaded) {
+      return <Home homeClickFunction={this.goHome} dataClickFunction={this.goData} contactClickFunction={this.goContact} data={this.state.data} />
+    } else if (this.state.currentPage == "Data" && this.state.data_loaded) {
+      return <Data homeClickFunction={this.goHome} dataClickFunction={this.goData} contactClickFunction={this.goContact} data={this.state.data} />
     } else if (this.state.currentPage == "Contact") {
-      return Contact(this.goHome, this.goData, this.goContact)
+      return Contact(this.goHome, this.goData, this.goContact);
+    } else {
+      return LoadingScreen();
     }
   }
 }
+
+const LoadingScreen = () =>
+  <div>
+    <Spinner animation="border" role="status">
+      <span className="sr-only">Loading...</span>
+    </Spinner>
+  </div>
 
 class Home extends Component {
   constructor(props) {
@@ -89,19 +104,176 @@ class Home extends Component {
       homeClickFunction: props.homeClickFunction,
       dataClickFunction: props.dataClickFunction,
       contactClickFunction: props.contactClickFunction,
-      data: props.data,
+      student_population: props.data.student_population,
+      faculty_population: props.data.faculty_population,
+      ins_housing: props.data.ins_housing,
+      greek_housing: props.data.greek_housing,
       locationFilter: "All",
-      weekFilter: "All"
+      weekFilter: "All",
+      newTotal: "new",
+      casesDeaths: "cases"
     }
     this.getLocationCaseTotal = this.getLocationCaseTotal.bind(this);
+    this.updateNewTotalState = this.updateNewTotalState.bind(this);
+    this.updateCasesDeathsState = this.updateCasesDeathsState.bind(this);
+    this.getPopulationCaseTotal = this.getPopulationCaseTotal.bind(this);
   }
-  
-  getLocationCaseTotal(location, type) {
-    // Location: house. Type: "ins" or "greek".
-    console.log(this.state.data);
+
+  getLocationCaseTotal(location, list_kword, query, type) {
+    // Location: institution name. list_kword: "ins" or "greek". query: "total" or "new". type: "cases" or "deaths".
+    let list = null;
+    if (list_kword == "ins") {
+      list = this.state.ins_housing;
+    } else {
+      list = this.state.greek_housing;
+    }
+
+    for (let row of list) {
+      if ((row.week == row.max_week) && row.location == location) {
+        if (query == "total") {
+          if (type == "cases") {
+            return {
+              "cases": row.total_cases,
+              "location": row.location,
+              "start_date": row.start_date,
+              "end_date": row.end_date,
+              "query": query,
+              "type": type
+            }
+          } else {
+            return {
+              "cases": row.total_deaths,
+              "location": row.location,
+              "start_date": row.start_date,
+              "end_date": row.end_date,
+              "query": query,
+              "type": type
+            }
+          }
+        } else {
+          if (type == "cases") {
+            return {
+              "cases": row.new_cases,
+              "location": row.location,
+              "start_date": row.start_date,
+              "end_date": row.end_date,
+              "query": query,
+              "type": type
+            }
+          } else {
+            return {
+              "cases": row.new_deaths,
+              "location": row.location,
+              "start_date": row.start_date,
+              "end_date": row.end_date,
+              "query": query,
+              "type": type
+            };
+          }
+        }
+      }
+    }
+
+    return {
+      "cases": 0,
+      "location": location,
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-01",
+      "query": query,
+      "type": type
+    }
+  }
+
+  toggleNewTotal(event) {
+    console.log(event);
+  }
+
+  updateNewTotalState(event) {
+    this.setState({ newTotal: event.target.value });
+  }
+
+  updateCasesDeathsState(event) {
+    this.setState({ casesDeaths: event.target.value });
+  }
+
+  getPopulationCaseTotal(population, query, type) {
+    // population: "student" or "faculty".  query: "total" or "new". type: "cases" or "deaths".
+    let list = null;
+    if (population == "student") {
+      list = this.state.student_population;
+    } else {
+      list = this.state.faculty_population;
+    }
+    
+    let cases;
+    let start_date;
+    let end_date;
+    let body_text = "Placeholder body text";
+
+    for (let row of list) {
+      if ((row.week == row.max_week) && (row.population == population)) {
+        if (query == "total") {
+          for(let first_row of list) {
+            if(first_row.week == 0) {
+              start_date = first_row.start_date;
+            }
+          }
+          end_date = row.end_date;
+          if (type == "cases") {
+            cases = row.total_cases;
+            console.log(cases);
+            break;
+          } else {
+            cases = row.total_deaths;
+            console.log(cases);
+            break;
+          }
+        } else { // New
+          start_date = row.start_date;
+          end_date = row.end_date;
+          if (type == "cases") {
+            cases = row.new_cases;
+            console.log(cases);
+            break;
+          } else {
+            cases = row.new_deaths;
+            console.log(cases);
+            break;
+          }
+        }
+      }
+    }
+
+    let return_val = {
+      "cases": cases,
+      "population": population,
+      "start_date": start_date,
+      "end_date": end_date,
+      "query": query,
+      "type": type,
+      "body_text": body_text
+    }
+    console.log("Returning:")
+    console.log(return_val);
+    return return_val;
   }
 
   render() {
+
+    let radioStyle = {
+      textAlign: "center",
+      verticalAlign: "center"
+    };
+
+    let slides = [
+      this.getPopulationCaseTotal("student", "total", "cases"),
+      this.getPopulationCaseTotal("student", "new", "cases"),
+      this.getPopulationCaseTotal("faculty", "total", "cases"),
+      this.getPopulationCaseTotal("faculty", "total", "cases")
+    ];
+    
+    console.log(slides);
+
     return <div className="Home">
       <AppNavBar
         currentPage="Home"
@@ -111,12 +283,13 @@ class Home extends Component {
       />
       <Container>
         <h1>The Unofficial IIT COVID-19 Dashboard</h1>
-        <h3>Presented by the smoldering corpse of AEPKS</h3>
+        <h3>"Because We Don't Care" ~Alan Cramb</h3>
         <br />
         <Row>
           <Col md={{ span: 6, offset: 3 }}>
             <StatsCarousel
               currentSlide="Start"
+              slides = {slides}
             />
           </Col>
         </Row>
@@ -124,7 +297,48 @@ class Home extends Component {
         <br />
         <Row>
           <Col md={{ span: 8, offset: 2 }}>
-            <h2>Cases by Location</h2>
+            <h2>Cases and Deaths By Location</h2>
+            <br />
+          </Col>
+        </Row>
+        <Row>
+          <Col md={{ span: 4, offset: 2 }}>
+            <Form>
+              <Form.Control
+                as="select"
+                className="my-1 mr-sm-2"
+                custom
+                onChange={this.updateNewTotalState}
+              >
+                <option
+                  value="new"
+                >New
+                </option>
+                <option
+                  value="total"
+                >Total
+                </option>
+              </Form.Control>
+            </Form>
+          </Col>
+          <Col md={{ span: 4 }}>
+            <Form>
+              <Form.Control
+                as="select"
+                className="my-1 mr-sm-2"
+                custom
+                onChange={this.updateCasesDeathsState}
+              >
+                <option
+                  value="cases"
+                >Cases
+                </option>
+                <option
+                  value="deaths"
+                >Deaths
+                </option>
+              </Form.Control>
+            </Form>
             <br />
           </Col>
         </Row>
@@ -138,216 +352,75 @@ class Home extends Component {
         </Row>
         <Row>
           <Col md={{ span: 2, offset: 2 }}>
-            {CaseNumberBox({
-              cases: 100,
-              location: "McCormick Student Village",
-              start_date: "8/24",
-              end_date: "9/01"
-            })}
+            {CaseNumberBox(this.getLocationCaseTotal("McCormick Student Village", "ins", this.state.newTotal, this.state.casesDeaths))}
             <br />
           </Col>
-          <Col md={{ span: 2, offset: 0 }}>
-            {CaseNumberBox({
-              cases: 100,
-              location: "State Street Village",
-              start_date: "8/24",
-              end_date: "9/01"
-            })}
-          </Col>
-          <Col md={{ span: 2, offset: 0 }}>
-            {CaseNumberBox({
-              cases: 27,
-              location: "Phi Kappa Sigma",
-              start_date: "8/24",
-              end_date: "9/01"
-            })}
-          </Col>
-          <Col md={{ span: 2, offset: 0 }}>
-            {CaseNumberBox({
-              cases: 27,
-              location: "Delta Tau Delta",
-              start_date: "8/24",
-              end_date: "9/01"
-            })}
-          </Col>
-        </Row>
-
-        <Row>
-          <Col md={{ span: 2, offset: 2 }}>
-            {CaseNumberBox({
-              cases: 27,
-              location: "Kacek Hall",
-              start_date: "8/24",
-              end_date: "9/01"
-            })}
-          </Col>
-          <Col md={{ span: 2, offset: 0 }}>
-            {CaseNumberBox({
-              cases: 27,
-              location: "Gunsalus Hall",
-              start_date: "8/24",
-              end_date: "9/01"
-            })}
-          </Col>
-          <Col md={{ span: 2, offset: 0 }}>
-            {CaseNumberBox({
-              cases: 27,
-              location: "Alpha Sigma Alpha",
-              start_date: "8/24",
-              end_date: "9/01"
-            })}
+          <Col md={{ span: 2 }}>
+            {CaseNumberBox(this.getLocationCaseTotal("State Street Village", "ins", this.state.newTotal, this.state.casesDeaths))}
             <br />
           </Col>
-          <Col md={{ span: 2, offset: 0 }}>
-            {CaseNumberBox({
-              cases: 27,
-              location: "Kappa Phi Delta",
-              start_date: "8/24",
-              end_date: "9/01"
-            })}
+          <Col md={{ span: 2 }}>
+            {CaseNumberBox(this.getLocationCaseTotal("Phi Kappa Sigma", "greek", this.state.newTotal, this.state.casesDeaths))}
+            <br />
+          </Col>
+          <Col md={{ span: 2 }}>
+            {CaseNumberBox(this.getLocationCaseTotal("Delta Tau Delta", "greek", this.state.newTotal, this.state.casesDeaths))}
             <br />
           </Col>
         </Row>
-
         <Row>
           <Col md={{ span: 2, offset: 2 }}>
-            {CaseNumberBox({
-              cases: 27,
-              location: "Carmen Hall",
-              start_date: "8/24",
-              end_date: "9/01"
-            })}
+            {CaseNumberBox(this.getLocationCaseTotal("Kacek Hall", "ins", this.state.newTotal, this.state.casesDeaths))}
             <br />
           </Col>
-          <Col md={{ span: 2, offset: 0 }}>
-          </Col>
-          <Col md={{ span: 2, offset: 0 }}>
-            {CaseNumberBox({
-              cases: 27,
-              location: "Pi Kappa Phi",
-              start_date: "8/24",
-              end_date: "9/01"
-            })}
+          <Col md={{ span: 2 }}>
+            {CaseNumberBox(this.getLocationCaseTotal("Gunsalus Hall", "ins", this.state.newTotal, this.state.casesDeaths))}
             <br />
           </Col>
-          <Col md={{ span: 2, offset: 0 }}>
-            {CaseNumberBox({
-              cases: 27,
-              location: "Triangle",
-              start_date: "8/24",
-              end_date: "9/01"
-            })}
+          <Col md={{ span: 2 }}>
+            {CaseNumberBox(this.getLocationCaseTotal("Alpha Sigma Alpha", "greek", this.state.newTotal, this.state.casesDeaths))}
+            <br />
+          </Col>
+          <Col md={{ span: 2 }}>
+            {CaseNumberBox(this.getLocationCaseTotal("Kappa Phi Delta", "greek", this.state.newTotal, this.state.casesDeaths))}
+            <br />
+          </Col>
+        </Row>
+        <Row>
+          <Col md={{ span: 2, offset: 2 }}>
+            {CaseNumberBox(this.getLocationCaseTotal("Carmen Hall", "ins", this.state.newTotal, this.state.casesDeaths))}
+            <br />
+          </Col>
+          <Col md={{ span: 2, offset: 2 }}>
+            {CaseNumberBox(this.getLocationCaseTotal("Pi Kappa Phi", "greek", this.state.newTotal, this.state.casesDeaths))}
+            <br />
+          </Col>
+          <Col md={{ span: 2 }}>
+            {CaseNumberBox(this.getLocationCaseTotal("Triangle", "greek", this.state.newTotal, this.state.casesDeaths))}
+            <br />
           </Col>
         </Row>
       </Container>
     </div>
   }
-}
 
+}
 
 class Data extends Component {
   constructor(props) {
     super(props);
-    console.log(props);
     this.state = {
       homeClickFunction: props.homeClickFunction,
       dataClickFunction: props.dataClickFunction,
       contactClickFunction: props.contactClickFunction,
+      student_population: props.data.student_population,
+      faculty_population: props.data.faculty_population,
+      ins_housing: props.data.ins_housing,
+      greek_housing: props.data.greek_housing,
       locationFilter: "All",
       weekFilter: "All"
     }
   }
-  
-  StudentSampleData = [
-    [
-      0,
-      "2020-08-24",
-      "2020-09-01",
-      3,
-      0,
-      5,
-      0
-    ],
-    [
-      1,
-      "2020-09-01",
-      "2020-09-08",
-      0,
-      0,
-      5,
-      0
-    ]
-  ]
-
-  FacultySampleData = [
-    [
-      0,
-      "2020-08-24",
-      "2020-09-01",
-      3,
-      0,
-      5,
-      0
-    ],
-    [
-      1,
-      "2020-09-01",
-      "2020-09-08",
-      0,
-      0,
-      5,
-      0
-    ]
-  ]
-
-
-
-  GreekSampleData = [
-    [
-      0,
-      "2020-08-24",
-      "2020-09-01",
-      "Phi Kappa Sigma",
-      3,
-      0,
-      5,
-      0
-    ],
-    [
-      1,
-      "2020-09-01",
-      "2020-09-08",
-      "Phi Kappa Sigma",
-      0,
-      0,
-      5,
-      0
-    ]
-  ]
-
-  InstitutionalSampleData = [
-    [
-      0,
-      "2020-08-24",
-      "2020-09-01",
-      "McCormick Student Village",
-      3,
-      0,
-      5,
-      0
-    ],
-    [
-      1,
-      "2020-09-01",
-      "2020-09-08",
-      "McCormick Student Village",
-      0,
-      0,
-      5,
-      0
-    ]
-  ]
-
 
   render() {
     return (
@@ -368,24 +441,25 @@ class Data extends Component {
             <h3>Student Population</h3>
             <PopulationDataTable
               table="student"
-              data={this.StudentSampleData}
+              data={this.state.student_population}
             />
             <hr />
             <h3>Faculty Population</h3>
             <PopulationDataTable
               table="faculty"
-              data={this.FacultySampleData}
+              data={this.state.faculty_population}
             />
             <hr />
             <h3>Institutional Housing Statistics</h3>
             <LocationDataTable
               table="institutional"
-              data={this.InstitutionalSampleData} />
+              data={this.state.ins_housing} />
             <hr />
             <h3>Greek Housing Statistics</h3>
+            {console.log(this.state.greek_housing)}
             <LocationDataTable
               table="greek"
-              data={this.GreekSampleData} />
+              data={this.state.greek_housing} />
             <hr />
           </Col>
         </Row>
@@ -427,8 +501,8 @@ class PopulationDataTable extends Component {
     this.state = {
       table: props.table,
       data: props.data,
-      start_filter: "2020-08-01",
-      end_filter: "2020-09-01"
+      start_filter: "2020-01-01",
+      end_filter: "2020-12-31"
     }
 
     this.update_start_filter_state = this.update_start_filter_state.bind(this);
@@ -438,13 +512,22 @@ class PopulationDataTable extends Component {
 
   process_data_to_table() {
     let data = this.state.data;
+    let data_headers = [
+      "week",
+      "start_date",
+      "end_date",
+      "new_cases",
+      "new_deaths",
+      "total_cases",
+      "total_deaths"
+    ]
     let jsx_data = [];
     for (const row of data) {
-      let date = row[1];
+      let date = row.start_date;
       if (date >= this.state.start_filter && date <= this.state.end_filter) {
         let row_data = [];
-        for (const val of row) {
-          row_data.push(<td>{val}</td>)
+        for (let header of data_headers) {
+          row_data.push(<td>{row[header]}</td>)
         }
         jsx_data.push(<tr>{row_data}</tr>);
       }
@@ -540,15 +623,24 @@ class LocationDataTable extends Component {
   process_data_to_table() {
     let data = this.state.data;
     let jsx_data = [];
+    let data_headers = [
+      "week",
+      "start_date",
+      "end_date",
+      "location",
+      "new_cases",
+      "new_deaths",
+      "total_cases",
+      "total_deaths"
+    ]
     for (const row of data) {
-      let date = row[1];
-      let location = row[3];
+      let date = row.start_date;
+      let location = row.location;
       if (this.state.location_filter == "All" || location == this.state.location_filter) {
-        // Check if locations are all, and if not, make sure they match 
         if (date >= this.state.start_filter && date <= this.state.end_filter) {
           let row_data = [];
-          for (const val of row) {
-            row_data.push(<td>{val}</td>)
+          for (let header of data_headers) {
+            row_data.push(<td>{row[header]}</td>)
           }
           jsx_data.push(<tr>{row_data}</tr>);
         }
@@ -621,61 +713,75 @@ class LocationDataTable extends Component {
   }
 }
 
-const CarouselStatsItem = ({ value, population, type, date_start, date_end, body_text }) =>
+const CarouselStatsItem = ({ cases, population, type, start_date, end_date, body_text }) =>
   <Carousel.Item>
     <img
       className="d-block w-100"
-      src={"http://localhost:8000/number_image/" + value}
-      alt={"New" + population + " " + type + " from " + date_start + " to " + date_end}
+      src={"http://localhost:8000/number_image/" + cases}
+      alt={"New" + population + " " + type + " from " + start_date + " to " + end_date}
     />
     <Carousel.Caption>
-      <h3>New {population} {type} from {date_start} to {date_end}</h3>
+      <h3>New {population} {type} from {start_date} to {end_date}</h3>
       <p>{body_text}</p>
     </Carousel.Caption>
   </Carousel.Item>
 
-
 class StatsCarousel extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      slides: props.slides
+    }
+    this.render_slides = this.render_slides.bind(this);
+  }
+  
+  render_slides() {
+    let slides = [];
+    console.log(this);
+    for (let slide in this.state.slides) {
+      console.log(slide);
+      slides.push(CarouselStatsItem(slide));
+    }
+    return slides;
+  }
+
   render() {
+    console.log(this.render_slides());
     return (
       <Carousel>
-        {CarouselStatsItem({
-          value: "100",
-          population: "Student",
-          type: "Deaths",
-          date_start: "8/24",
-          date_end: "9/01",
-          body_text: "That's a lot of damage. ~Phil Swift"
-        })}
-        {CarouselStatsItem({
-          value: "25",
-          population: "Faculty",
-          type: "Cases",
-          date_start: "8/24",
-          date_end: "9/01",
-          body_text: "That's a lot of damage. ~Phil Swift"
-        })}
-        {CarouselStatsItem({
-          value: "14",
-          population: "Student",
-          type: "Cases",
-          date_start: "8/24",
-          date_end: "9/01",
-          body_text: "That's a lot of damage. ~Phil Swift"
-        })}
+        {this.render_slides()}
       </Carousel>
     )
   }
 }
 
-const CaseNumberBox = ({ cases, location, start_date, end_date }) =>
-  <Card style={{ width: '10rem' }}>
-    <Card.Body>
-      <Card.Title>{cases}</Card.Title>
-      <Card.Subtitle>{location}</Card.Subtitle>
-      <Card.Text>{"New cases from " + start_date + " to " + end_date}</Card.Text>
-    </Card.Body>
-  </Card>
+const CaseNumberBox = ({ cases, location, start_date, end_date, query, type }) => {
+  if (cases == 0) {
+    return (
+      <Card style={{ width: '10rem' }}>
+        <Card.Body>
+          <Card.Title>{cases}</Card.Title>
+          <Card.Subtitle>{location}</Card.Subtitle>
+          <Card.Text>No cases reported as of 2020-09-01</Card.Text>
+        </Card.Body>
+      </Card>
+    )
+  } else {
+    return (
+      <Card style={{ width: '10rem' }}>
+        <Card.Body>
+          <Card.Title>{cases}</Card.Title>
+          <Card.Subtitle>{location}</Card.Subtitle>
+          <Card.Text>{capitalizeFirstLetter(query) + " " + type + " from " + start_date + " to " + end_date}</Card.Text>
+        </Card.Body>
+      </Card>
+    )
+  }
+}
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 
 export default App;

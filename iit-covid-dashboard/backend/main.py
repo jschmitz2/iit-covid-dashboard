@@ -114,7 +114,6 @@ async def getData():
     ]
 
     for location in locations:
-
         if location in INST_HOUSING:
             output_map = ins_housing
         elif location in GREEK_HOUSING:
@@ -133,10 +132,15 @@ async def getData():
             loc_week_case = 0
             loc_week_death = 0
             
+            case = None
+
             for case in filter(lambda case: (case["location"] == location and case["week"] == cur_week), cases):
                 loc_week_case += case["cases_num"]
                 loc_week_death += case["deaths_num"]
 
+            if not case:
+                continue
+            
             loc_total_case += loc_week_case
             loc_total_death += loc_week_death
 
