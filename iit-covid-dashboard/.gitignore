@@ -11,6 +11,9 @@
 # production
 /build
 
+/venv
+*/*/venv
+
 # creds
 /_credentials
 
