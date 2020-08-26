@@ -204,7 +204,7 @@ class Home extends Component {
     //   "\"We must reopen in the fall with an on-campus experience.\" ~Alan Cramb",
     //   "\"They are all in close proximity to each other (definitely not 6 feet apart) and not wearing masks.\""
     //   "\"When I walked into my supposedly clean dorm room, there was hair everywhere. There was dried pasta on the floor. There was dirt everywhere. There was rust and mold in my shower.\""
-    // ] 
+    // ]
 
     let cases;
     let start_date = "2020-12-31";
@@ -709,7 +709,7 @@ class LocationDataTable extends Component {
 
 const CarouselStatsItem = ({ cases, population, type, start_date, end_date, body_text, key }) => {
   let width = window.innerWidth;
-  let heading_text = "New " + population.toLowerCase() + " " + type + "\nFrom " + start_date + " to " + end_date;
+  let heading_text = "New " + population.toLowerCase() + " " + type + "|From " + start_date + " to " + end_date;
 
   return (
     <Carousel.Item key={key}>
@@ -789,5 +789,5 @@ export default App;
 
 // Sources:
 
-// Generating images with the info: 
+// Generating images with the info:
 // https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas
