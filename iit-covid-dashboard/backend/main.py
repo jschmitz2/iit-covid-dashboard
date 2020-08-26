@@ -4,6 +4,12 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 import os
+<<<<<<< Updated upstream
+=======
+
+print(os.getcwd())
+
+>>>>>>> Stashed changes
 import image_gen
 import sheet_data
 
@@ -26,6 +32,7 @@ async def getImage(value: int):
 
 @app.get("/data")
 async def getData():
+<<<<<<< Updated upstream
     # Return data: 
     student_population = []
     faculty_population = []
@@ -166,3 +173,7 @@ async def getData():
         
 
             
+=======
+    data = 
+
+>>>>>>> Stashed changes
