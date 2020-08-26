@@ -3,7 +3,7 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 def gen_number_image(value, text):
     antialias_mult = 2
-    clarity_mult = 3
+    clarity_mult = 2
 
     x_res = 800 * clarity_mult * antialias_mult
     y_res = 460 * clarity_mult * antialias_mult
@@ -16,7 +16,7 @@ def gen_number_image(value, text):
     img = Image.new('RGB', (x_res, y_res), color = (40, 40, 40))
 
     fnt_title = ImageFont.truetype("HelveticaNeue.ttf", 150 * clarity_mult * antialias_mult)
-    fnt_subtitle = ImageFont.truetype("HelveticaNeue.ttf", 30 * clarity_mult * antialias_mult)
+    fnt_subtitle = ImageFont.truetype("HelveticaNeue.ttf", 60 * clarity_mult * antialias_mult)
     d = ImageDraw.Draw(img)
 
     written_text = str(value)
