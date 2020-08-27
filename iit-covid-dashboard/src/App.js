@@ -486,6 +486,8 @@ const Contact = (homeClickFunction, dataClickFunction, contactClickFunction) =>
         <Col md={{ span: 8, offset: 2 }}>
           <h1>About This Page</h1>
           <p>This page was created for the Illinois Tech student community. Currently, the university only offers data in weekly emails to students, staff, and faculty.</p><br />
+
+	  <p>The quote from Alan Cramb in the header of the page can be found <a href="https://web.archive.org/web/20200827210425/https://www.iit.edu/COVID-19/university-town-hall">here</a>.</p>
           <h1>Sources of Data</h1>
           <p>Data is obtained from weekly emails sent out by the Illinois Tech administration. The data is manually processed into a spreadsheet, which the webapp reads. Click "See the Data" if you're interested in this. If you have other data or information, please reach out. </p><br />
           <h1>Project Author</h1>
