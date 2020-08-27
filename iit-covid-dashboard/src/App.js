@@ -14,7 +14,7 @@ const AppNavBar = ({ currentPage, homeClickFunction, dataClickFunction, contactC
         <Nav.Link onClick={homeClickFunction}>Home</Nav.Link>
         <Nav.Link onClick={dataClickFunction}>Complete Data</Nav.Link>
         <Nav.Link href="https://www.iit.edu/COVID-19">University COVID-19 Page</Nav.Link>
-        <Nav.Link onClick={dataClickFunction}>See the Data</Nav.Link>
+        <Nav.Link href="https://docs.google.com/spreadsheets/d/1B0bI2sJdpdogdJ1Jz5XvMHN2pdXriw1InLbHfZbe210/edit#gid=0">See the Data</Nav.Link>
         <Nav.Link href="https://github.com/jschmitz2/iit-covid-dashboard">Source Code</Nav.Link>
         <Nav.Link onClick={contactClickFunction}>Contact</Nav.Link>
       </Nav>
@@ -45,7 +45,7 @@ class App extends Component {
   componentDidMount() {
     var xhr = new XMLHttpRequest();
     var status = false;
-    xhr.open("GET", "http://www.iit.wtf:8000/data", false);
+    xhr.open("GET", "https://covid.iit.wtf:8000/data", false);
     // xhr.open("GET", "http://localhost:8000/data", false);
     xhr.onload = function (e) {
       if (xhr.readyState === 4) {
@@ -386,12 +386,22 @@ class Home extends Component {
             {CaseNumberBox(this.getLocationCaseTotal("Carmen Hall", "ins", this.state.newTotal, this.state.casesDeaths))}
             <br />
           </Col>
-          <Col md={{ span: 2, offset: 2 }}>
+          <Col md={{ span: 2 }}>
+            {CaseNumberBox(this.getLocationCaseTotal("VanderCook", "ins", this.state.newTotal, this.state.casesDeaths))}
+            <br />
+          </Col>
+          <Col md={{ span: 2 }}>
             {CaseNumberBox(this.getLocationCaseTotal("Pi Kappa Phi", "greek", this.state.newTotal, this.state.casesDeaths))}
             <br />
           </Col>
           <Col md={{ span: 2 }}>
             {CaseNumberBox(this.getLocationCaseTotal("Triangle", "greek", this.state.newTotal, this.state.casesDeaths))}
+            <br />
+          </Col>
+        </Row>
+        <Row>
+          <Col md={{ span: 2, offset: 2}}>
+            {CaseNumberBox(this.getLocationCaseTotal("Alpha Sigma Phi", "greek", this.state.newTotal, this.state.casesDeaths))}
             <br />
           </Col>
         </Row>
@@ -495,7 +505,7 @@ class PopulationDataTable extends Component {
     this.state = {
       table: props.table,
       data: props.data,
-      start_filter: "2020-01-01",
+      start_filter: "2020-05-01",
       end_filter: "2020-12-31"
     }
 
@@ -584,6 +594,7 @@ class LocationDataTable extends Component {
         "Triangle",
         "Pi Kappa Phi",
         "Alpha Sigma Alpha",
+        "Alpha Sigma Phi",
         "Kappa Phi Delta"
       ]
     } else if (props.table === "institutional") {
@@ -593,7 +604,9 @@ class LocationDataTable extends Component {
         "State Street Village",
         "Kacek Hall",
         "Gunsalus Hall",
-        "Carmen Hall"
+        "Carmen Hall",
+	"VanderCook",
+	"No Location"
       ]
     }
 
@@ -602,7 +615,7 @@ class LocationDataTable extends Component {
       data: props.data,
       locations: locations,
       location_filter: "All",
-      start_filter: "2020-08-01",
+      start_filter: "2020-05-01",
       end_filter: "2021-09-01"
     }
 
@@ -715,7 +728,7 @@ const CarouselStatsItem = ({ cases, population, type, start_date, end_date, body
     <Carousel.Item key={key}>
       <img
         className="d-block w-100"
-        src={"http://www.iit.wtf:8000/number_image/" + cases + "/" + heading_text}
+        src={"https://covid.iit.wtf:8000/number_image/" + cases + "/" + heading_text}
         alt={heading_text}
       />
       {/* <Carousel.Caption>

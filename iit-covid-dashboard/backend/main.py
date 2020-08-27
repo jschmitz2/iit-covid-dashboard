@@ -25,7 +25,7 @@ async def getImage(value: int, width: str):
 
 @app.get("/data")
 async def getData():
-    # Return data: 
+    # Return data:
     student_population = []
     faculty_population = []
     ins_housing = []
@@ -39,15 +39,16 @@ async def getData():
     }
 
     raw_data = sheet_session.get_case_data()
-    
+
     cases = []
     for row in raw_data:
         cases.append({
             "date": row[0],
             "pop": row[1],
             "location": row[2],
-            "cases_num": int(row[3]),
-            "deaths_num": int(row[4])
+
+            "cases_num": int(row[3]) if row[3] else 0,
+            "deaths_num": int(row[4]) if row[4] else 0
         })
 
     # Get max week
@@ -57,8 +58,8 @@ async def getData():
         case["week"] = sheet_session.map_date_to_week(case["date"])
         case["start_date"], case["end_date"] = sheet_session.get_week_data(case["week"])
 
-    # "Cases" now has appropriate data. 
-    # 
+    # "Cases" now has appropriate data.
+    #
     # Generate student population and faculty population tables.
 
     pop_output_map = {"STUDENT": student_population, "FACULTY": faculty_population}
@@ -80,7 +81,7 @@ async def getData():
             for case in filter(lambda case: (case["week"] == week_idx and case["pop"] == pop_name), cases):
                 new_cases += case["cases_num"]
                 new_deaths += case["deaths_num"]
-        
+
             total_cases += new_cases
             total_deaths += new_deaths
 
@@ -92,7 +93,7 @@ async def getData():
                 week_obj["max_week"] = max_week
 
                 pop_output.append(week_obj)
-    
+
 
     locations = set()
     for case in cases:
@@ -104,7 +105,9 @@ async def getData():
         "State Street Village",
         "Kacek Hall",
         "Gunsalus Hall",
-        "Carmen Hall"
+        "Carmen Hall",
+        "VanderCook",
+        "No Location"
     ]
 
     GREEK_HOUSING = [
@@ -113,6 +116,7 @@ async def getData():
         "Alpha Sigma Alpha",
         "Kappa Phi Delta",
         "Pi Kappa Phi",
+        "Alpha Sigma Phi",
         "Triangle"
     ]
 
@@ -127,14 +131,14 @@ async def getData():
         max_week = -1
         for case in filter(lambda case: (case["location"] == location), cases):
             max_week = max(max_week, case["week"])
-        
+
         loc_total_case = 0
         loc_total_death = 0
 
         for cur_week in range(max_week + 1):
             loc_week_case = 0
             loc_week_death = 0
-            
+
             case = None
 
             for case in filter(lambda case: (case["location"] == location and case["week"] == cur_week), cases):
@@ -143,7 +147,7 @@ async def getData():
 
             if not case:
                 continue
-            
+
             loc_total_case += loc_week_case
             loc_total_death += loc_week_death
 
@@ -160,16 +164,16 @@ async def getData():
 
 
 
-            
-
-
-    
 
 
 
-    
 
-        
-        
 
-            
+
+
+
+
+
+
+
+

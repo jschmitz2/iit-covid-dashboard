@@ -17,7 +17,7 @@ def gen_number_image(value, text):
 
     fnt_title = ImageFont.truetype("HelveticaNeue.ttf", 150 * clarity_mult * antialias_mult)
     fnt_subtitle = ImageFont.truetype("HelveticaNeue.ttf", 60 * clarity_mult * antialias_mult)
-    fnt_text = ImageFont.truetype("HelveticaNeue.ttf", 30 * clarity_mult * antialias_mult)
+    fnt_text = ImageFont.truetype("HelveticaNeue.ttf", 40 * clarity_mult * antialias_mult)
 
     d = ImageDraw.Draw(img)
 
@@ -63,7 +63,7 @@ def gen_number_image(value, text):
     )
 
     text_x_start = x_res / 2 - text_text_size[0]/2
-    text_y_start = y_res * .75
+    text_y_start = y_res * .73
 
     d.text(
         (text_x_start, text_y_start),
